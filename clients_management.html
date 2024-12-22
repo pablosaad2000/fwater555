@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء فاتورة - نظام بهارات</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .invoice-container {
+            max-width: 900px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: white;
+        }
+
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .invoice-header h2 {
+            margin-bottom: 5px;
+            color: #28a745;
+        }
+
+        .table th {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .total-section {
+            text-align: right;
+            font-size: 18px;
+            margin-top: 20px;
+            background-color: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .signature {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .signature div {
+            display: inline-block;
+            width: 40%;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="index.html">system Boharat.eg</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">لوحة التحكم</a></li>
+                <li class="nav-item"><a class="nav-link" href="sales_management.html">إدارة المبيعات</a></li>
+                <li class="nav-item"><a class="nav-link active" href="clients_management.html">فواتير</a></li>
+                <li class="nav-item"><a class="nav-link" href="inventory_management.html">إدارة المخزون</a></li>
+                <li class="nav-item"><a class="nav-link" href="debts_management.html">إدارة الديون</a></li>
+                <li class="nav-item"><a class="nav-link" href="shipping_management.html">إدارة شركات الشحن</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings.html">الإعدادات</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="text-center">إنشاء فاتورة</h2>
+
+        <!-- Invoice Form -->
+        <form id="invoiceForm">
+            <div class="form-group">
+                <label>اسم العميل:</label>
+                <input type="text" id="customerName" class="form-control" placeholder="أدخل اسم العميل" required>
+            </div>
+            <div class="form-group">
+                <label>التاريخ:</label>
+                <input type="date" id="invoiceDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>رقم الهاتف:</label>
+                <input type="text" id="customerPhone" class="form-control" placeholder="أدخل رقم الهاتف" required>
+            </div>
+            <div class="form-group">
+                <label>العنوان:</label>
+                <input type="text" id="customerAddress" class="form-control" placeholder="أدخل عنوان العميل" required>
+            </div>
+
+            <!-- Table for Products -->
+            <div class="form-group">
+                <label>تفاصيل الأصناف:</label>
+                <table class="table table-bordered" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الصنف</th>
+                            <th>الوزن (كيلو)</th>
+                            <th>سعر الكيلو</th>
+                            <th>الإجمالي</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><input type="text" class="form-control item-name" placeholder="اسم الصنف"></td>
+                            <td><input type="number" class="form-control item-weight" placeholder="الوزن"></td>
+                            <td><input type="number" class="form-control item-price" placeholder="السعر"></td>
+                            <td><input type="number" class="form-control item-total" placeholder="الإجمالي" readonly>
+                            </td>
+                            <td><button type="button" class="btn btn-danger remove-row">حذف</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" id="addRow" class="btn btn-primary">إضافة صف جديد</button>
+            </div>
+
+            <div class="form-group">
+                <label>إجمالي الفاتورة:</label>
+                <input type="text" id="invoiceTotal" class="form-control" placeholder="أدخل إجمالي الفاتورة" readonly>
+            </div>
+            <button type="button" id="generateInvoice" class="btn btn-success btn-block">إنشاء الفاتورة</button>
+        </form>
+
+        <!-- Invoice Preview -->
+        <div id="invoicePreview" class="invoice-container" style="display: none;">
+            <div class="invoice-header">
+                <img src="لوجو جديد.png" class="logo" alt="Logo">
+                <h2>شركة بهارات</h2>
+                <p>Tel: 01000111768 | www.boharat-eg.com</p>
+            </div>
+
+            <p><strong>التاريخ:</strong> <span id="previewDate"></span></p>
+            <p><strong>الاسم:</strong> <span id="previewCustomerName"></span></p>
+            <p><strong>الهاتف:</strong> <span id="previewCustomerPhone"></span></p>
+            <p><strong>العنوان:</strong> <span id="previewCustomerAddress"></span></p>
+
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الصنف</th>
+                        <th>الوزن</th>
+                        <th>سعر الكيلو</th>
+                        <th>الإجمالي</th>
+                    </tr>
+                </thead>
+                <tbody id="previewItems">
+                    <!-- Items will be added here -->
+                </tbody>
+            </table>
+
+            <div class="total-section">
+                إجمالي الفاتورة: <span id="previewTotal"></span> جنيه
+            </div>
+
+            <div class="signature">
+                <div>توقيع مدير المبيعات</div>
+                <div>توقيع المستلم</div>
+            </div>
+            <button id="downloadInvoice" class="btn btn-primary mt-3">تحميل الفاتورة كصورة</button>
+        </div>
+    </div>
+
+    <script>
+        // Add new row to the table
+        $("#addRow").click(function () {
+            const rowCount = $("#itemsTable tbody tr").length + 1;
+            $("#itemsTable tbody").append(`
+                <tr>
+                    <td>${rowCount}</td>
+                    <td><input type="text" class="form-control item-name" placeholder="اسم الصنف"></td>
+                    <td><input type="number" class="form-control item-weight" placeholder="الوزن"></td>
+                    <td><input type="number" class="form-control item-price" placeholder="السعر"></td>
+                    <td><input type="number" class="form-control item-total" placeholder="الإجمالي" readonly></td>
+                    <td><button type="button" class="btn btn-danger remove-row">حذف</button></td>
+                </tr>
+            `);
+        });
+
+        // Calculate total for each row
+        $(document).on("input", ".item-weight, .item-price", function () {
+            const row = $(this).closest("tr");
+            const weight = parseFloat(row.find(".item-weight").val()) || 0;
+            const price = parseFloat(row.find(".item-price").val()) || 0;
+            row.find(".item-total").val((weight * price).toFixed(2));
+            calculateInvoiceTotal();
+        });
+
+        // Remove a row
+        $(document).on("click", ".remove-row", function () {
+            $(this).closest("tr").remove();
+            calculateInvoiceTotal();
+        });
+
+        // Calculate total invoice amount
+        function calculateInvoiceTotal() {
+            let total = 0;
+            $(".item-total").each(function () {
+                total += parseFloat($(this).val()) || 0;
+            });
+            $("#invoiceTotal").val(total.toFixed(2));
+        }
+
+        // Generate Invoice
+        $("#generateInvoice").click(function () {
+            const customerName = $("#customerName").val();
+            const invoiceDate = $("#invoiceDate").val();
+            const customerPhone = $("#customerPhone").val();
+            const customerAddress = $("#customerAddress").val();
+            const invoiceTotal = $("#invoiceTotal").val();
+
+            $("#previewCustomerName").text(customerName);
+            $("#previewDate").text(invoiceDate);
+            $("#previewCustomerPhone").text(customerPhone);
+            $("#previewCustomerAddress").text(customerAddress);
+            $("#previewTotal").text(invoiceTotal);
+
+            const itemsTable = $("#previewItems");
+            itemsTable.empty();
+            $("#itemsTable tbody tr").each(function (index) {
+                const itemName = $(this).find(".item-name").val();
+                const weight = $(this).find(".item-weight").val();
+                const price = $(this).find(".item-price").val();
+                const total = $(this).find(".item-total").val();
+                itemsTable.append(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${itemName}</td>
+                        <td>${weight}</td>
+                        <td>${price}</td>
+                        <td>${total}</td>
+                    </tr>
+                `);
+            });
+
+            $("#invoicePreview").show();
+        });
+
+        // Download Invoice as Image
+        $("#downloadInvoice").click(function () {
+            html2canvas(document.querySelector("#invoicePreview")).then(canvas => {
+                const link = document.createElement("a");
+                link.download = "invoice.png";
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        });
+    </script>
+    <footer class="bg-dark text-white text-center mt-5 p-3">
+        <p>&copy; 2024 شركة بهارات | جميع الحقوق محفوظة 👨‍💻 Created by Marwan El Amer</p>
+    </footer>
+</body>
+
+</html>

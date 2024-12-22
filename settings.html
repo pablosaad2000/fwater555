@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - نظام بهارات</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .dashboard-header {
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .form-section h5 {
+            margin-bottom: 15px;
+            color: #28a745;
+        }
+
+        .activity-log {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="index.html">system Boharat.eg</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">لوحة التحكم</a></li>
+                <li class="nav-item"><a class="nav-link" href="sales_management.html">إدارة المبيعات</a></li>
+                <li class="nav-item"><a class="nav-link active" href="clients_management.html">فواتير</a></li>
+                <li class="nav-item"><a class="nav-link" href="inventory_management.html">إدارة المخزون</a></li>
+                <li class="nav-item"><a class="nav-link" href="debts_management.html">إدارة الديون</a></li>
+                <li class="nav-item"><a class="nav-link" href="shipping_management.html">إدارة شركات الشحن</a></li>
+                <li class="nav-item"><a class="nav-link" href="settings.html">الإعدادات</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <div class="dashboard-header">
+            <h3>الإعدادات</h3>
+            <p>تحكم في إعدادات النظام هنا.</p>
+        </div>
+
+        <!-- General Settings -->
+        <div class="form-section">
+            <h5>الإعدادات العامة</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <label class="form-check-label" for="darkModeToggle">تفعيل الوضع الليلي</label>
+            </div>
+            <div class="form-group mt-3">
+                <label>الألوان الرئيسية:</label>
+                <input type="color" id="primaryColor" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>اختيار الخط:</label>
+                <select class="form-control" id="fontSelect">
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Cairo">Cairo</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Email and Notifications -->
+        <div class="form-section">
+            <h5>إعدادات البريد والإشعارات</h5>
+            <div class="form-group">
+                <label>البريد الإلكتروني:</label>
+                <input type="email" id="emailInput" class="form-control" placeholder="example@boharat-eg.com">
+            </div>
+            <button type="button" class="btn btn-primary" id="testEmail">اختبار البريد الإلكتروني</button>
+
+            <div class="form-group mt-3">
+                <label>الإشعارات:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notifyLateOrders">
+                    <label class="form-check-label" for="notifyLateOrders">تنبيه الطلبات المتأخرة</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="notifyDebts">
+                    <label class="form-check-label" for="notifyDebts">تنبيه العملاء المتأخرين عن السداد</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Settings -->
+        <div class="form-section">
+            <h5>إعدادات الفواتير</h5>
+            <div class="form-group">
+                <label>رفع شعار الشركة:</label>
+                <input type="file" id="uploadLogo" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>تذييل الفاتورة:</label>
+                <textarea id="invoiceFooter" class="form-control" rows="3"
+                    placeholder="مثال: شكراً لتعاملكم معنا!"></textarea>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="form-section">
+            <h5>إدارة المستخدمين</h5>
+            <button class="btn btn-secondary" id="addUser">إضافة مستخدم جديد</button>
+            <ul id="userList" class="mt-3">
+                <!-- قائمة المستخدمين -->
+            </ul>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="activity-log">
+            <h5>سجل النشاطات</h5>
+            <ul id="activityLog">
+                <!-- النشاطات -->
+            </ul>
+        </div>
+
+        <button type="button" class="btn btn-success mt-4" id="saveSettings">حفظ الإعدادات</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Dark Mode Toggle
+            $("#darkModeToggle").change(function () {
+                if ($(this).is(":checked")) {
+                    $("body").css("background-color", "#343a40").css("color", "white");
+                } else {
+                    $("body").css("background-color", "#f8f9fa").css("color", "black");
+                }
+            });
+
+            // Save Settings
+            $("#saveSettings").click(function () {
+                alert("تم حفظ الإعدادات بنجاح!");
+            });
+
+            // Test Email
+            $("#testEmail").click(function () {
+                const email = $("#emailInput").val();
+                if (email) {
+                    alert(`تم إرسال بريد تجريبي إلى ${email}`);
+                } else {
+                    alert("يرجى إدخال بريد إلكتروني!");
+                }
+            });
+
+            // Add User
+            $("#addUser").click(function () {
+                const userName = prompt("أدخل اسم المستخدم:");
+                if (userName) {
+                    $("#userList").append(`<li>${userName}</li>`);
+                    logActivity(`تم إضافة المستخدم ${userName}`);
+                }
+            });
+
+            // Log Activity
+            function logActivity(activity) {
+                const timestamp = new Date().toLocaleString();
+                $("#activityLog").prepend(`<li>${timestamp} - ${activity}</li>`);
+            }
+        });
+    </script>
+    اعدادت بس بايظه معلش
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center mt-5 p-3">
+        <p>&copy; 2024 شركة بهارات | جميع الحقوق محفوظة 👨‍💻 Created by Marwan El Amer</p>
+    </footer>
+</body>
+
+</html>
